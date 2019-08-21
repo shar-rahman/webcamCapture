@@ -3,6 +3,9 @@ import sys
 import os
 import time
 
+#TO-DO
+# - live view for cycle mode
+
 # show args
 def printUsage():
     print("\nUsage: python WebcamCap.py -cam 1 -cycle")
@@ -33,7 +36,7 @@ if sys.argv[3] == "-keypress":
     cycles = -2
     timeInterval = 0
     print("Press <space> to take a photo, <esc> to exit.\n")
-if sys.argv[3] == "-cycle":
+elif sys.argv[3] == "-cycle":
     usingCycle = True
     print("Live view not available for cycle mode.")
     print("Enter 5 10 to take a photo every 10 seconds for a total of 5 photos\n")
@@ -41,6 +44,7 @@ if sys.argv[3] == "-cycle":
     cycleUsage = userInput.split()
     cycles = int(cycleUsage[0])
     timeInterval = int(cycleUsage[1])
+else: printUsage()
 
 # check if cam exists
 isLive = True
@@ -48,9 +52,6 @@ try:
     camNum = int(sys.argv[2])
 except Exception as e:
     isLive = False
-
-#vidW = 3840
-#vidH = 1080
 
 cap = cv2.VideoCapture(camNum, cv2.CAP_DSHOW)
 vidH = 1080
@@ -60,7 +61,11 @@ cap.set(cv2.CAP_PROP_FRAME_WIDTH, vidW)
 cv2.namedWindow("capture", cv2.WINDOW_NORMAL)
 cv2.resizeWindow("capture", (1920, 540))
 #if cam exists, will output vid to window
+
 if isLive:
+    # create image folder
+    if not os.path.exists("images/"): os.makedirs("images/")
+
     intervalNum = 0
     holdTime = int(time.time())
     while cap.isOpened() and cycles != intervalNum:
@@ -68,7 +73,7 @@ if isLive:
         ret,save = cap.read()
         if not ret: break
         if usingCycle: # -cycle mode
-            saveName = "%d_%d.png" % (holdTime, intervalNum)
+            saveName = "images/%d_%d.png" % (holdTime, intervalNum)
             cv2.imwrite(saveName, image)
             cv2.imshow("capture", image)
             print("Image %s saved!" % saveName)
@@ -77,12 +82,14 @@ if isLive:
         else: # -keypress mode
             key = cv2.waitKey(1)
             if key % 256 == 32:  
-                saveName = "%d_%d.png" % (holdTime, intervalNum)
+                saveName = "images/%d_%d.png" % (holdTime, intervalNum)
                 cv2.imwrite(saveName, save)
                 print("Image %s saved!" % saveName)
                 intervalNum = intervalNum + 1
             if key % 256 == 27: break
         cv2.imshow("capture", cv2.resize(image, (vidW, vidH)))
 
+print("Closing Camera feed")
 cap.release()
+print("Closing windows")
 cv2.destroyAllWindows()
