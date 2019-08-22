@@ -30,6 +30,15 @@ if sys.argv[1] != "-cam": printUsage()
 if int(sys.argv[2]) < 0 or int(sys.argv[2]) > 10: printUsage()
 if sys.argv[3] != "-keypress" and sys.argv[3] != "-cycle": printUsage()
 
+# check if cam exists
+isLive = True
+try:
+    camNum = int(sys.argv[2])
+except Exception as e:
+    print("Camera number not found")
+    isLive = False
+
+Menu = True
 # mode selection
 if sys.argv[3] == "-keypress": 
     usingCycle = False
@@ -40,18 +49,17 @@ elif sys.argv[3] == "-cycle":
     usingCycle = True
     print("Live view not available for cycle mode.")
     print("Enter 5 10 to take a photo every 10 seconds for a total of 5 photos\n")
-    userInput = input("Enter # of images followed by time interval between (seconds): ")
-    cycleUsage = userInput.split()
-    cycles = int(cycleUsage[0])
-    timeInterval = int(cycleUsage[1])
+    while Menu:
+        userInput = input("Enter # of images followed by time interval between (seconds): ")
+        cycleUsage = userInput.split()
+        cycles = int(cycleUsage[0])
+        timeInterval = int(cycleUsage[1])
+        if cycles < 1 or timeInterval < 1:
+            print("Invalid input try for cycle or time interval. Must be positive integer above 0.")
+        else: Menu = False
 else: printUsage()
 
-# check if cam exists
-isLive = True
-try:
-    camNum = int(sys.argv[2])
-except Exception as e:
-    isLive = False
+
 
 cap = cv2.VideoCapture(camNum, cv2.CAP_DSHOW)
 vidH = 1080
@@ -59,7 +67,7 @@ vidW = 3840
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, vidH)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, vidW)
 cv2.namedWindow("capture", cv2.WINDOW_NORMAL)
-cv2.resizeWindow("capture", (1920, 540))
+cv2.resizeWindow("capture", (960, 270))
 #if cam exists, will output vid to window
 
 if isLive:
